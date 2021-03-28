@@ -1,10 +1,11 @@
 import logging
 
 from flask import Flask
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
-
+migrate = Migrate()
 
 def create_app(db_uri):
     app = Flask(__name__)
@@ -13,6 +14,7 @@ def create_app(db_uri):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.logger.setLevel(logging.INFO)
     db.init_app(app)
+    migrate.init_app(app, db)
     app.app_context().push()
     with app.app_context():
         from app.routes import routes
