@@ -9,8 +9,7 @@ class User(db.Model):
     """
     __tablename__ = 'users'
     name = db.Column(db.String(80), primary_key=True)
-    birthday = db.Column(db.Date, nullable=False)
-    __table_args__ = (CheckConstraint(birthday <= date.today(), name='check_birthday_not_in_future'), {})
+    birthday = db.Column(db.String(80), nullable=False)
 
     def __init__(self, name, birthday):
         self.name = name
@@ -34,11 +33,11 @@ class User(db.Model):
         :param name: name of the user to add/update
         :param dateOfBirth: birthday in format "YYYY-MM-DD"
         """
-        birthday = datetime.strptime(dateOfBirth, '%Y-%m-%d').date()
+        datetime.strptime(dateOfBirth, '%Y-%m-%d').date()
         user = cls.query.filter_by(name=name).first()
         if not user:  # create new user
-            new_user = cls(name, birthday)
+            new_user = cls(name, dateOfBirth)
             db.session.add(new_user)
         else:  # update existing user
-            user.birthday = birthday
+            user.birthday = dateOfBirth
         db.session.commit()

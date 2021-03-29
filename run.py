@@ -8,7 +8,7 @@ from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 
-app = create_app(db_uri='sqlite:///' + os.path.join(os.path.abspath(os.getcwd()), 'production.db'))
+app = create_app(db_uri=os.environ['APP_DB_URI'])
 
 
 @app.shell_context_processor

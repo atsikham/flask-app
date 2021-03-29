@@ -4,3 +4,4 @@ venv
 migrations
 *.db
 *.log
+secret.yaml

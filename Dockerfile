@@ -11,5 +11,5 @@ FROM base
 COPY --from=builder /install /usr/local
 COPY . /app
 WORKDIR /app
-ENTRYPOINT ["python"]
+ENTRYPOINT ["./entrypoint.sh"]
 CMD ["run.py"]

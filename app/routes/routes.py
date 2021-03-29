@@ -1,9 +1,14 @@
 from app.common.common import error_handler
 from app.models.user import User
-from datetime import date
+from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 from flask import current_app as app
 from flask import jsonify, request, Response
+
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    return Response('', status=200, mimetype='application/json')
 
 
 @app.route('/hello/<username>', methods=['PUT'])
@@ -18,7 +23,7 @@ def add_or_update_user(username):
 @error_handler
 def get_user(username):
     user = User.get_user(username)
-    birthday = user.birthday
+    birthday = datetime.strptime(user.birthday, '%Y-%m-%d').date()
     today = date.today()
     year_diff = today.year - birthday.year
     next = birthday + relativedelta(years=year_diff)
