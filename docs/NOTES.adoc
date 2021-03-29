@@ -1,0 +1,84 @@
+= Notes
+
+== Build image locally
+
+[source,bash]
+----
+docker build -t eu.gcr.io/helloworld-309013/helloworld:0.0.1 .
+----
+
+== Run Docker image locally
+
+. Add following line to dockerfile
++
+[source,Dockerfile]
+----
+ENV APP_DB_URI="sqlite:////app/production.db"
+----
+. Build image (see step above)
+. Run container
++
+[source,bash]
+----
+docker run -d -p 5000:5000 eu.gcr.io/helloworld-309013/helloworld:0.0.1
+----
+
+== Push Docker image manually
+
+For more information check link:https://cloud.google.com/container-registry/docs/advanced-authentication[documentation]
+
+[source,bash]
+----
+gcloud auth login
+gcloud auth configure-docker
+docker push eu.gcr.io/helloworld-309013/helloworld:0.0.1
+----
+
+== Run tests manually
+[source,bash]
+----
+pytest tests
+----
+
+== Install Nginx ingress controller
+
+For more information check link:https://cloud.google.com/community/tutorials/nginx-ingress-gke[documentation]
+
+[source,bash]
+----
+helm repo add nginx-stable https://helm.nginx.com/stable
+helm repo update
+helm install nginx-ingress nginx-stable/nginx-ingress
+----
+
+== Render helm templates
+
+[source,bash]
+----
+helm template deployment -f deployment/values-prod.yaml
+----
+
+== Helm install
+
+[source,bash]
+----
+helm install helloworld deployment -f deployment/values-prod.yaml --namespace default --atomic
+----
+
+== Helm upgrade
+
+[source,bash]
+----
+helm upgrade helloworld deployment -f deployment/values-prod.yaml --namespace default --atomic
+----
+
+== TLS configuration
+
+[source,bash]
+----
+certbot certonly --manual -d helloworld.tikhomirov.space -d test.tikhomirov.space -d tikhomirov.space --preferred-challenges dns
+----
+
+=== Links
+. https://community.letsencrypt.org/t/how-do-i-generate-the-lets-encrypt-certificate-and-key-on-my-own-device-more-info-inside/27510
+. https://cert-manager.io/docs/tutorials/acme/ingress/
