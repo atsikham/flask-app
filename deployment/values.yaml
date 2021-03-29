@@ -45,11 +45,14 @@ ingress:
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/service-upstream: "true"
-    # kubernetes.io/tls-acme: "true"
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+    cert-manager.io/issuer: "letsencrypt-prod"
+    kubernetes.io/tls-acme: "true"
+  tls:
+  - secretName: secret-tls
+    hosts:
+      - tikhomirov.space
+      - test.tikhomirov.space
+      - helloworld.tikhomirov.space
 
 resources:
   # We usually recommend not to specify default resources and to leave this as a conscious
