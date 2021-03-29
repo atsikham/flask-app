@@ -33,7 +33,8 @@ class User(db.Model):
         :param name: name of the user to add/update
         :param dateOfBirth: birthday in format "YYYY-MM-DD"
         """
-        datetime.strptime(dateOfBirth, '%Y-%m-%d').date()
+        if datetime.strptime(dateOfBirth, '%Y-%m-%d').date() > date.today() or not name.isalpha():
+            raise ValueError
         user = cls.query.filter_by(name=name).first()
         if not user:  # create new user
             new_user = cls(name, dateOfBirth)

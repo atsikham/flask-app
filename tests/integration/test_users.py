@@ -12,19 +12,19 @@ from dateutil.relativedelta import relativedelta
 def test_cases_positive():
     return [
         {
-            'username': 'test_get1',
+            'username': 'Testgetone',
             'delta_days': 170
         },
         {
-            'username': 'test_get2',
+            'username': 'Testgettwo',
             'delta_days': 285
         },
         {
-            'username': 'test_get3',
+            'username': 'Testgetthree',
             'delta_days': 0
         },
         {
-            'username': 'test_put1',
+            'username': 'Testputone',
             'delta_days': 8
         }
     ]
@@ -144,7 +144,7 @@ def test_put_correct_feb29(test_client, test_cases_positive, test_headers):
     assert response.status_code == 204
 
 
-def test_put_incorrect_value(test_client, test_cases_positive, test_headers):
+def test_put_incorrect_value_not_existing_date(test_client, test_cases_positive, test_headers):
     """
     GIVEN a Flask application configured for testing
     WHEN the '/hello/<username>' page is requested (PUT) with incorrect birthday value
@@ -152,6 +152,32 @@ def test_put_incorrect_value(test_client, test_cases_positive, test_headers):
     """
     data = {"dateOfBirth": "2021-02-29"}
     user = test_cases_positive[3]['username']
+    response = test_client.put(f'/hello/{user}', data=json.dumps(data), headers=test_headers)
+    assert response.status_code == 400
+    assert json.loads(response.data)['error'] == 'Incorrect value passed'
+
+
+def test_put_incorrect_value_future_date(test_client, test_cases_positive, test_headers):
+    """
+    GIVEN a Flask application configured for testing
+    WHEN the '/hello/<username>' page is requested (PUT) with birthday in future
+    THEN check that the response is negative
+    """
+    data = {"dateOfBirth": "2999-02-28"}
+    user = test_cases_positive[3]['username']
+    response = test_client.put(f'/hello/{user}', data=json.dumps(data), headers=test_headers)
+    assert response.status_code == 400
+    assert json.loads(response.data)['error'] == 'Incorrect value passed'
+
+
+def test_put_incorrect_value_future_date(test_client, test_headers):
+    """
+    GIVEN a Flask application configured for testing
+    WHEN the '/hello/<username>' page is requested (PUT) name that contains numbers
+    THEN check that the response is negative
+    """
+    data = {"dateOfBirth": "2000-02-28"}
+    user = 'atsikham123'
     response = test_client.put(f'/hello/{user}', data=json.dumps(data), headers=test_headers)
     assert response.status_code == 400
     assert json.loads(response.data)['error'] == 'Incorrect value passed'
