@@ -5,3 +5,5 @@ migrations
 *.db
 *.log
 secret.yaml
+secret-tls.yaml
+issuer.yaml
