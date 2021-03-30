@@ -1,4 +1,4 @@
-name: CI
+name: CICD
 
 on:
   push:
@@ -79,7 +79,7 @@ jobs:
         run: |
           echo "DOCKER_REGISTRY=eu.gcr.io" >> $GITHUB_ENV
           echo "DOCKER_IMAGE=${{ secrets.GCLOUD_PROJECT }}/helloworld" >> $GITHUB_ENV
-          echo "DOCKER_TAG=$(git rev-parse --short HEAD)d" >> $GITHUB_ENV
+          echo "DOCKER_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       -
         name: Build Docker image
         uses: elgohr/Publish-Docker-Github-Action@3.02
@@ -107,3 +107,41 @@ jobs:
           password: ${{ steps.gcloud.outputs.password }}
           registry: ${{ env.DOCKER_REGISTRY }}
           tags: "latest,${{ env.DOCKER_TAG }}"
+
+  deploy:
+    name: Deploy
+    if: github.event_name == 'push'
+    needs: [ docker-image ]
+    runs-on: ubuntu-latest
+
+    steps:
+      -
+        name: Checkout working branch
+        uses: actions/checkout@v1
+      -
+        name: Set Environment variables
+        run: |
+          echo "DOCKER_REGISTRY=eu.gcr.io" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE=${{ secrets.GCLOUD_PROJECT }}/helloworld" >> $GITHUB_ENV
+          echo "DOCKER_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+      -
+        name: Deploy Release on cluster
+        env:
+          GCLOUD_KEY: ${{ secrets.GCLOUD_KEY }}
+        run: |
+          echo "$GCLOUD_KEY" | base64 --decode > ${HOME}/gcloud.json
+          gcloud auth activate-service-account --key-file=${HOME}/gcloud.json
+          gcloud auth configure-docker
+          gcloud container clusters get-credentials helloworld \
+            --zone europe-central2-a \
+            --project ${{ secrets.GCLOUD_PROJECT }}
+
+          # install/upgrade helm chart and test deployment
+          helm upgrade helloworld deployment \
+            --values deployment/values-prod.yaml \
+            --set image.repository=${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }} \
+            --set image.tag=${{ env.DOCKER_TAG }} \
+            --namespace default \
+            --atomic
+
+          helm test helloworld
