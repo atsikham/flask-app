@@ -19,24 +19,46 @@ image::docs/system.jpg[System Diagram]
 
 == API
 
-. Description: Saves/updates the given user's name and date of birth in the database.
-+
-Request: `PUT /hello/<username> { "dateOfBirth": "YYYY-MM-DD" }`
-+
-Response: 204 No Content
-+
-Constraints: <username> must contain only letters. YYYY-MM-DD must be a date before the today date.
-+
-. Description: Returns hello birthday message for the given user Request: Get /hello/<username>
-+
-Response: 200 OK
-+
-Response Examples:
-+
-A. If username’s birthday is in N days:
-+
-`{ "message": "Hello, <username>! Your birthday is in N day(s)" }`
-+
-B. If username’s birthday is today:
-+
-`{ "message": "Hello, <username>! Happy birthday!" }`
+Constraints: <username> must contain only letters.
+YYYY-MM-DD must be a date before the today date.
+
+[cols="3a,5a,4",options=header]
+|===
+|Request
+|Response
+|Description
+
+|PUT /hello/<username>
+
+[source,json]
+----
+{
+  "dateOfBirth": "YYYY-MM-DD"
+}
+----
+|204 No Content
+|Saves/updates the given user's name and date of birth in the database
+
+|GET /hello/<username>
+|200 OK
+
+If username’s birthday is in N days:
+
+[source,json]
+----
+{
+  "message": "Hello, <username>! Your birthday is in N day(s)"
+}
+----
+
+If username’s birthday is today:
+
+[source,json]
+----
+{
+  "message": "Hello, <username>! Happy birthday!"
+}
+----
+
+|Returns hello birthday message for the given user
+|===
