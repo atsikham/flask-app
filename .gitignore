@@ -7,3 +7,5 @@ migrations
 secret.yaml
 secret-tls.yaml
 issuer.yaml
+.coverage
+report.xml

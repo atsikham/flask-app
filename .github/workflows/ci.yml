@@ -49,10 +49,16 @@ jobs:
       -
         name: Test with pytest
         run: |
-          pytest --exitfirst --verbose --failed-first --cov=app
+          pytest --exitfirst --verbose --failed-first --cov=app --junitxml=report.xml
       -
         name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v1.3.1
+      -
+        name: Publish test report
+        uses: mikepenz/action-junit-report@v2
+        with:
+          report_paths: 'report.xml'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   docker-image:
     name: Build, Check & Publish Docker Image
