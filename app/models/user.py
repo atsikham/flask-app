@@ -1,6 +1,5 @@
 from app import db
 from datetime import date, datetime
-from sqlalchemy import CheckConstraint
 
 
 class User(db.Model):

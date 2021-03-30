@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  tests:
+    name: Lint and Test
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [ 3.8, 3.9 ]
+
+    steps:
+      -
+        name: Checkout working branch
+        uses: actions/checkout@v2
+      -
+        name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      -
+        name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+      -
+        name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest pytest-cov
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      -
+        name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 app tests --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      -
+        name: Test with pytest
+        run: |
+          pytest --exitfirst --verbose --failed-first --cov=app --junitxml=report.xml
+      -
+        name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v1.3.1
+      -
+        name: Publish test report
+        uses: mikepenz/action-junit-report@v2
+        with:
+          report_paths: 'report.xml'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  docker-image:
+    name: Build, Check & Publish Docker Image
+    if: github.event_name == 'push'
+    needs: [ tests ]
+    runs-on: ubuntu-latest
+
+    steps:
+      -
+        name: Checkout working branch
+        uses: actions/checkout@v1
+      -
+        name: Install dependencies
+        run: |
+          wget https://github.com/wagoodman/dive/releases/download/v0.9.2/dive_0.9.2_linux_amd64.deb
+          sudo apt install ./dive_0.9.2_linux_amd64.deb
+      -
+        name: Set Environment variables
+        run: |
+          echo "DOCKER_REGISTRY=eu.gcr.io" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE=${{ secrets.GCLOUD_PROJECT }}/helloworld" >> $GITHUB_ENV
+          echo "DOCKER_TAG=$(git rev-parse --short HEAD)d" >> $GITHUB_ENV
+      -
+        name: Build Docker image
+        uses: elgohr/Publish-Docker-Github-Action@3.02
+        with:
+          name: ${{ env.DOCKER_IMAGE }}
+          registry: ${{ env.DOCKER_REGISTRY }}
+          no_push: true
+          tags: "latest,${{ env.DOCKER_TAG }}"
+      -
+        name: Check Docker image efficiency
+        run: |
+          CI=true dive "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}"
+      -
+        name: Login to Gcloud registry
+        id: gcloud
+        uses: elgohr/gcloud-login-action@0.2
+        with:
+          account_key: ${{ secrets.GCLOUD_KEY }}
+      -
+        name: Publish Docker image
+        uses: elgohr/Publish-Docker-Github-Action@3.02
+        with:
+          name: ${{ env.DOCKER_IMAGE }}
+          username: ${{ steps.gcloud.outputs.username }}
+          password: ${{ steps.gcloud.outputs.password }}
+          registry: ${{ env.DOCKER_REGISTRY }}
+          tags: "latest,${{ env.DOCKER_TAG }}"

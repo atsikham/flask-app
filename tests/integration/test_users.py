@@ -170,7 +170,7 @@ def test_put_incorrect_value_future_date(test_client, test_cases_positive, test_
     assert json.loads(response.data)['error'] == 'Incorrect value passed'
 
 
-def test_put_incorrect_value_future_date(test_client, test_headers):
+def test_put_incorrect_value_user(test_client, test_headers):
     """
     GIVEN a Flask application configured for testing
     WHEN the '/hello/<username>' page is requested (PUT) name that contains numbers
