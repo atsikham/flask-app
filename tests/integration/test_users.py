@@ -117,7 +117,7 @@ def test_put_correct_not_existing(test_client, test_headers):
     response = test_client.put(f'/hello/{user}', data=json.dumps(data), headers=test_headers)
     assert response.status_code == 204
     response = test_client.get(f'/hello/{user}')
-    assert f'Hello, {user}! Your birthday is in' in json.loads(response.data)['message']
+    assert f'Hello, {user}!' in json.loads(response.data)['message']
 
 
 def test_put_correct_existing(test_client, test_cases_positive, test_headers):
