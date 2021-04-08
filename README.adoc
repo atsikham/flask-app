@@ -1,4 +1,4 @@
-= Helloworld test app
+= Helloworld app
 
 == Verified environment
 
