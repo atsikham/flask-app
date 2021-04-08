@@ -92,56 +92,56 @@ jobs:
         name: Check Docker image efficiency
         run: |
           CI=true dive "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}"
-      -
-        name: Login to Gcloud registry
-        id: gcloud
-        uses: elgohr/gcloud-login-action@0.2
-        with:
-          account_key: ${{ secrets.GCLOUD_KEY }}
-      -
-        name: Publish Docker image
-        uses: elgohr/Publish-Docker-Github-Action@3.02
-        with:
-          name: ${{ env.DOCKER_IMAGE }}
-          username: ${{ steps.gcloud.outputs.username }}
-          password: ${{ steps.gcloud.outputs.password }}
-          registry: ${{ env.DOCKER_REGISTRY }}
-          tags: "latest,${{ env.DOCKER_TAG }}"
+#      -
+#        name: Login to Gcloud registry
+#        id: gcloud
+#        uses: elgohr/gcloud-login-action@0.2
+#        with:
+#          account_key: ${{ secrets.GCLOUD_KEY }}
+#      -
+#        name: Publish Docker image
+#        uses: elgohr/Publish-Docker-Github-Action@3.02
+#        with:
+#          name: ${{ env.DOCKER_IMAGE }}
+#          username: ${{ steps.gcloud.outputs.username }}
+#         password: ${{ steps.gcloud.outputs.password }}
+#          registry: ${{ env.DOCKER_REGISTRY }}
+#          tags: "latest,${{ env.DOCKER_TAG }}"
 
-  deploy:
-    name: Deploy
-    if: github.event_name == 'push'
-    needs: [ docker-image ]
-    runs-on: ubuntu-latest
+#  deploy:
+#    name: Deploy
+#    if: github.event_name == 'push'
+#    needs: [ docker-image ]
+#    runs-on: ubuntu-latest
 
-    steps:
-      -
-        name: Checkout working branch
-        uses: actions/checkout@v1
-      -
-        name: Set Environment variables
-        run: |
-          echo "DOCKER_REGISTRY=eu.gcr.io" >> $GITHUB_ENV
-          echo "DOCKER_IMAGE=${{ secrets.GCLOUD_PROJECT }}/helloworld" >> $GITHUB_ENV
-          echo "DOCKER_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-      -
-        name: Deploy Release on cluster
-        env:
-          GCLOUD_KEY: ${{ secrets.GCLOUD_KEY }}
-        run: |
-          echo "$GCLOUD_KEY" | base64 --decode > ${HOME}/gcloud.json
-          gcloud auth activate-service-account --key-file=${HOME}/gcloud.json
-          gcloud auth configure-docker
-          gcloud container clusters get-credentials helloworld \
-            --zone europe-central2-a \
-            --project ${{ secrets.GCLOUD_PROJECT }}
+#    steps:
+#      -
+#        name: Checkout working branch
+#        uses: actions/checkout@v1
+#      -
+#        name: Set Environment variables
+#        run: |
+#          echo "DOCKER_REGISTRY=eu.gcr.io" >> $GITHUB_ENV
+#          echo "DOCKER_IMAGE=${{ secrets.GCLOUD_PROJECT }}/helloworld" >> $GITHUB_ENV
+#          echo "DOCKER_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+#      -
+#        name: Deploy Release on cluster
+#        env:
+#          GCLOUD_KEY: ${{ secrets.GCLOUD_KEY }}
+#        run: |
+#          echo "$GCLOUD_KEY" | base64 --decode > ${HOME}/gcloud.json
+#          gcloud auth activate-service-account --key-file=${HOME}/gcloud.json
+#          gcloud auth configure-docker
+#          gcloud container clusters get-credentials helloworld \
+#            --zone europe-central2-a \
+#            --project ${{ secrets.GCLOUD_PROJECT }}
 
-          # install/upgrade helm chart and test deployment
-          helm upgrade helloworld deployment \
-            --values deployment/values-prod.yaml \
-            --set image.repository=${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }} \
-            --set image.tag=${{ env.DOCKER_TAG }} \
-            --namespace default \
-            --atomic
+#          # install/upgrade helm chart and test deployment
+#          helm upgrade --install helloworld deployment \
+#            --values deployment/values-prod.yaml \
+#            --set image.repository=${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }} \
+#            --set image.tag=${{ env.DOCKER_TAG }} \
+#            --namespace default \
+#            --atomic
 
-          helm test helloworld
+#          helm test helloworld
