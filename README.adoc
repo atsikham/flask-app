@@ -1,12 +1,5 @@
 = Helloworld test app
 
-== Check example
-
-[source,bash]
-----
-curl https://tikhomirov.space/hello/atsikham
-----
-
 == Verified environment
 
 K8s cluster: 1.18.15-gke.1501
