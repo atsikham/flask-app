@@ -82,7 +82,7 @@ jobs:
           echo "DOCKER_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       -
         name: Build Docker image
-        uses: elgohr/Publish-Docker-Github-Action@3.02
+        uses: elgohr/Publish-Docker-Github-Action@v5
         with:
           name: ${{ env.DOCKER_IMAGE }}
           registry: ${{ env.DOCKER_REGISTRY }}
@@ -100,7 +100,7 @@ jobs:
 #          account_key: ${{ secrets.GCLOUD_KEY }}
 #      -
 #        name: Publish Docker image
-#        uses: elgohr/Publish-Docker-Github-Action@3.02
+#        uses: elgohr/Publish-Docker-Github-Action@v5
 #        with:
 #          name: ${{ env.DOCKER_IMAGE }}
 #          username: ${{ steps.gcloud.outputs.username }}
